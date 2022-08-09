@@ -1,0 +1,88 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+df_tracks = pd.read_csv('D:/Ambika/Datasets/tracks.csv')
+df_tracks.head()
+
+#Check null values
+pd.isnull(df_tracks).sum()
+df_tracks.info()
+
+#Find top 10 least popular tracks
+
+sorted_df = df_tracks.sort_values('popularity', ascending = True).head(10)
+sorted_df
+
+df_tracks.describe().transpose()
+most_popular = df_tracks.query('popularity>90', inplace=False).sort_values('popularity', ascending=False)
+most_popular[:10]
+
+tracks_df = pd.read_csv('D:/Ambika/Datasets/tracks.csv')
+# Set index as release_date
+tracks_df.set_index("release_date", inplace=True)
+tracks_df.index = pd.to_datetime(tracks_df.index)
+tracks_df.head(10)
+
+#locate a specific artist
+tracks_df[['artists']].iloc[18]
+
+#Change duration(milliseconds) to duration(seconds)
+tracks_df["duration"] = tracks_df["duration_ms"].apply(lambda x: round(x/1000))
+tracks_df.drop("duration_ms", inplace=True, axis=1)
+
+#create a heatmap to check correlation
+corr_df = tracks_df.drop(["key","mode","explicit"], axis=1).corr(method="pearson")
+plt.figure(figsize=(14,6))
+heatmap = sns.heatmap(corr_df,annot=True, vmin=-1, vmax=1, center=0, cmap="inferno", linewidths=1, linecolor="black")
+heatmap.set_title("Correlation Heatmap Between Variables")
+
+#Create a regression plot
+plt.figure(figsize=(10,6))
+sns.regplot(data=sample_data, y="loudness", x="energy", color="c").set_title("loudness V/s energy Correlation")
+
+plt.figure(figsize=(10,6))
+sns.regplot(data=sample_data, y="popularity", x="acousticness", color="g").set_title("popularity V/s acousticness Correlation")
+
+#create a new column years
+tracks_df['dates'] = tracks_df.index.get_level_values('release_date')
+tracks_df.dates = pd.to_datetime(tracks_df.dates)
+years = tracks_df.dates.dt.year
+
+#pip install --user seaborn==0.11.0 (update lib version)
+
+#create a displot
+sns.displot(years, discrete=True, aspect=2, height=5, kind="hist").set_title("No. of songs per year")
+
+#Check duration of songs over the years using bar plot
+total_dr = tracks_df.duration
+figs_dim = (18,7)
+fig, ax = plt.subplots(figsize= figs_dim)
+fig = sns.barplot(x=years , y= total_dr, ax = ax, errwidth = False).set_title("Years V/s Duration")
+plt.xticks(rotation=90)
+
+#Create a line plot to check average duration of songs
+total_dr=tracks_df.duration
+sns.set_style(style='whitegrid')
+figs_dim = (10,5)
+fig, ax = plt.subplots(figsize=figs_dim)
+fig= sns.lineplot(x=years, y=total_dr, ax = ax).set(title = "Years V/s Duration")
+plt.xticks(rotation=60)
+
+#get genre data
+df_genre = pd.read_csv('D:/Ambika/Datasets/SpotifyFeatures.csv')
+df_genre.head(10)
+
+#Check duration of songs for different genres
+plt.title("Duration of songs in different genres")
+sns.color_palette('rocket', as_cmap = True)
+sns.barplot(y='genre', x='duration_ms', data=df_genre)
+plt.xlabel("duration in milli seconds")
+plt.ylabel("Genres")
+
+#Check Top 5 Genres By Popularity
+sns.set_style(style='darkgrid')
+plt.figure(figsize=(10,5))
+famous = df_genre.sort_values('popularity', ascending = False).head(10)
+sns.barplot(y='genre', x='popularity', data=famous).set(title="Top 5 Genres by popularity")
